@@ -8,8 +8,6 @@ public class SpiderManager : MonoBehaviour
     public string core_name;
     public int seed;
     public bool is_Debug;
-    public bool is_elite_strategy;
-
     public float start_pos_z = 0;
     public float Range_x = 20;
     public GameObject Spider;
@@ -46,7 +44,9 @@ public class SpiderManager : MonoBehaviour
     public void CreateManager()
     {
         Random.InitState(this.seed);
-        this.SpiderArray = new FootDna[this.num_spider];
+        this.SpiderArray = new GameObject[this.num_spider];
+        this.FootDnaArray = new FootDna[this.num_spider];
+        this.ScoreArray = new float[this.num_spider];
 
         this.SaveDnaArray = new FootDna[save_spider_num];
         this.SaveScoreArray = new float[save_spider_num];
@@ -84,14 +84,6 @@ public class SpiderManager : MonoBehaviour
         }
     }
 
-    public void DestroySpiderGameObjects()
-    {
-        for (int i = 0; i < this.num_spider; i++)
-        {
-            Destroy(this.SpiderArray[i]);
-        }
-    }
-
     public void ResetDnaArray(FootDna[] SaveArray, int seed)
     {
         Random.InitState(seed);
@@ -126,38 +118,6 @@ public class SpiderManager : MonoBehaviour
             this.SpiderArray[i] = _spider;
             this.FootDnaArray[i] = f_dna;
             this.ScoreArray[i] = 0.0f;
-        }
-
-        if(is_elite_strategy)
-        {
-            for (int i = 0; i < SaveArray.Length; i++)
-            {
-                int idx = this.num_spider + i;
-                FootDna save_f_dna = SaveArray[i];
-                
-                GameObject _spider = this.SpiderArray[idx];
-                Spider_Controller SC = _spider.GetComponent<Spider_Controller>();
-                
-                _spider.name = this.core_name + "_" + idx;
-
-                float px = -10000 + this.Range_x*idx;
-                _spider.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
-                _spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
-
-                FootDna f_dna = new FootDna(SC, save_f_dna.dna1, save_f_dna.dna2, save_f_dna.dna3, this.mutation_rate_angle,
-                                            this.mutation_rate_speed, this.mutation_rate_w, this.mutation_rate_color);
-                f_dna.set_gene(true);
-
-                this.SpiderArray[idx] = _spider;
-                this.FootDnaArray[idx] = f_dna;
-                this.ScoreArray[idx] = 0.0f;
-            }   
-        }
-
-        if(is_Debug)
-        {
-        Debug.Log("Second");
-        this.SpiderArray[0].GetComponent<Spider_Controller>().gene.foot1.debug_transform();
         }
     }
     public void cal_scores()
