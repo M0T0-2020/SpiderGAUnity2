@@ -39,7 +39,7 @@ public class GA_Manager : MonoBehaviour
     public int half_speed_max = 50;
     public int half_speed_min = 15;
     private int trail_cnt = 1;
-    private int mean_cnt = 1;
+    //private int mean_cnt = 1;
     public int mean_num = 1;
 
     public float prevMaxScore = (float)-1e10;
@@ -53,7 +53,7 @@ public class GA_Manager : MonoBehaviour
         GameObject spider_m = Instantiate(this.spider_manager) as GameObject;
         SpiderManager spider_m_sc = spider_m.GetComponent<SpiderManager>();
 
-        spider_m.name = "Spider Manager";
+        spider_m.name = "Spider Manager " + ga_name;
 
         spider_m_sc.num_spider = this.num_spider;
 
@@ -80,11 +80,13 @@ public class GA_Manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        acc_time += Time.deltaTime;
-        if(acc_time >= trail_time)
+        this.acc_time += Time.deltaTime;
+        if(this.acc_time >= this.trail_time)
         {
-            //acc_time = 0;
-            //trail_cnt += 1;
+            
+            this.acc_time = 0;
+            this.trail_cnt += 1;
+            int a = 2*mean_num;
         }
     }
 }
