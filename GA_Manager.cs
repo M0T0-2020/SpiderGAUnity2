@@ -11,7 +11,7 @@ public struct MutationRates
     public float mutation_rate_color;
 }
 
-public class GA_Manager1 : MonoBehaviour
+public class GA_Manager : MonoBehaviour
 {
     public GameObject spider_manager;
     public float mutation_rate_angle;
@@ -22,8 +22,6 @@ public class GA_Manager1 : MonoBehaviour
     private int num_Managers;
     
     public float Range_x = 20;
-    public float Range_z = 200;
-
     public bool is_Debug;
     public int seed = 42;
     public int num_spider = 150;
@@ -44,9 +42,6 @@ public class GA_Manager1 : MonoBehaviour
     private int mean_cnt = 1;
     public int mean_num = 1;
 
-
-    public float[] prevScoreArray;
-    public FootDna[] prevFootDnaArray;
     public float prevMaxScore = (float)-1e10;
     public enum GAName {SGA, IGS, SS, CHC, ER, MGG}
     [SerializeField]
@@ -55,11 +50,11 @@ public class GA_Manager1 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameObject spider_m = Instantiate(spider_manager) as GameObject;
+        GameObject spider_m = Instantiate(this.spider_manager) as GameObject;
         SpiderManager spider_m_sc = spider_m.GetComponent<SpiderManager>();
-        
-        spider_m.name = "GAM_" + this.ga_name;
-        spider_m_sc.name = "GAM_" + this.ga_name;
+
+        spider_m.name = "Spider Manager";
+
         spider_m_sc.num_spider = this.num_spider;
 
         spider_m_sc.save_spider_num = this.save_spider_num;
@@ -74,7 +69,7 @@ public class GA_Manager1 : MonoBehaviour
         spider_m_sc.half_speed_min = this.half_speed_min;
 
         spider_m_sc.Range_x = Range_x;
-        spider_m_sc.start_pos_z = Range_z;
+        spider_m_sc.start_pos_z = 0;
 
         spider_m_sc.seed = this.seed;
         spider_m_sc.is_Debug = this.is_Debug;

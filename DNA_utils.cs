@@ -3,19 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DNA_utils : MonoBehaviour
-{
-    void Start()
-    {
-            
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-}
 public struct Cal_Result_Data
 {
     public float[] ScoreArray;

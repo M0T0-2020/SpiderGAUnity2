@@ -40,16 +40,18 @@ public class SpiderManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
     }
 
     public void CreateManager()
     {
         Random.InitState(this.seed);
+        this.SpiderArray = new FootDna[this.num_spider];
 
         this.SaveDnaArray = new FootDna[save_spider_num];
         this.SaveScoreArray = new float[save_spider_num];
 
-        for (int i = 0; i < this.SpiderArray.Length; i++)
+        for (int i = 0; i < this.num_spider; i++)
         {
             GameObject _spider = Instantiate(Spider) as GameObject;
             Spider_Controller SC = _spider.GetComponent<Spider_Controller>();
@@ -58,6 +60,10 @@ public class SpiderManager : MonoBehaviour
             //Random.InitState(seed);
 
             float px = this.Range_x*i;
+            if(is_Debug)
+            {
+            Debug.Log("px: " + px);
+            }
             _spider.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
             _spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
             dna_a dna1 = new dna_a(this.angle_max, this.angle_min, this.half_speed_max, this.half_speed_min);
@@ -74,8 +80,7 @@ public class SpiderManager : MonoBehaviour
         }
         if(is_Debug)
         {
-        Debug.Log("Start");
-        this.SpiderArray[0].GetComponent<Spider_Controller>().gene.foot1.debug_transform();
+            Debug.Log("Start");
         }
     }
 
