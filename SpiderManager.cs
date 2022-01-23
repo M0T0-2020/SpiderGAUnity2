@@ -21,14 +21,11 @@ public class SpiderManager : MonoBehaviour
     public int angle_min = 10;
     public int half_speed_max = 50;
     public int half_speed_min = 15;
-    public int save_spider_num;
 
     [SerializeField]
     private GameObject[] SpiderArray;
     private FootDna[] FootDnaArray;
     private float[] ScoreArray;
-    private FootDna[] SaveDnaArray;
-    private float[] SaveScoreArray;
 
     void Awake()
     {
@@ -48,9 +45,6 @@ public class SpiderManager : MonoBehaviour
         this.FootDnaArray = new FootDna[this.num_spider];
         this.ScoreArray = new float[this.num_spider];
 
-        this.SaveDnaArray = new FootDna[save_spider_num];
-        this.SaveScoreArray = new float[save_spider_num];
-
         for (int i = 0; i < this.num_spider; i++)
         {
             GameObject _spider = Instantiate(Spider) as GameObject;
@@ -64,7 +58,7 @@ public class SpiderManager : MonoBehaviour
             {
             Debug.Log("px: " + px);
             }
-            _spider.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+            _spider.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
             _spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
             dna_a dna1 = new dna_a(this.angle_max, this.angle_min, this.half_speed_max, this.half_speed_min);
             dna_a dna2 = new dna_a(this.angle_max, this.angle_min, this.half_speed_max, this.half_speed_min);
@@ -84,7 +78,7 @@ public class SpiderManager : MonoBehaviour
         }
     }
 
-    public void ResetDnaArray(FootDna[] SaveArray, int seed)
+    public void ResetDnaArray(DNA_set[] NewFootDnaSetArray, int seed)
     {
         Random.InitState(seed);
         //this.SpiderArray = new GameObject[num_spider];
@@ -93,27 +87,18 @@ public class SpiderManager : MonoBehaviour
 
         for (int i = 0; i < this.num_spider; i++)
         {
-            int idx = i%SaveArray.Length;
-            FootDna save_f_dna = SaveArray[idx];
-
-            //Debug.Log(save_f_dna.dna1.f1_color);
-            save_f_dna.self_mutation();
-            
-            //Debug.Log(save_f_dna.dna1.f1_color);
-            
+            DNA_set new_fdna = NewFootDnaSetArray[i];
             GameObject _spider = this.SpiderArray[i];
             Spider_Controller SC = _spider.GetComponent<Spider_Controller>();
-            
-            _spider.name = this.core_name + "_" + i;
 
-            float px = -10000 + this.Range_x*i;
-            _spider.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+            float px = this.Range_x*i;
+            _spider.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
             _spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
 
-            FootDna f_dna = new FootDna(SC, save_f_dna.dna1, save_f_dna.dna2, save_f_dna.dna3, this.mutation_rate_angle,
+            FootDna f_dna = new FootDna(SC, new_fdna.dna1, new_fdna.dna2, new_fdna.dna3, this.mutation_rate_angle,
                                             this.mutation_rate_speed, this.mutation_rate_w, this.mutation_rate_color);
+            f_dna.mutation();
             f_dna.set_gene(true);
-            //Debug.Log(f_dna.dna1.f1_color);
 
             this.SpiderArray[i] = _spider;
             this.FootDnaArray[i] = f_dna;
@@ -141,8 +126,8 @@ public class SpiderManager : MonoBehaviour
             }
 
             Spider_Controller SC = tmp_spider.GetComponent<Spider_Controller>();
-            float px = -10000 + this.Range_x*i;
-            tmp_spider.transform.rotation = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+            float px = this.Range_x*i;
+            tmp_spider.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
             tmp_spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
             FootDna f_dna = new FootDna(SC, tmp_fdna.dna1, tmp_fdna.dna2, tmp_fdna.dna3, this.mutation_rate_angle,
                                             this.mutation_rate_speed, this.mutation_rate_w, this.mutation_rate_color);
@@ -170,16 +155,9 @@ public class SpiderManager : MonoBehaviour
                 else{break;}
             }
         }
-
-        for (int i = 0; i < this.save_spider_num; i++)
-        {
-            this.SaveDnaArray[i] = this.FootDnaArray[i];
-            this.SaveScoreArray[i] = this.ScoreArray[i];
-        }
-
         Cal_Result_Data Data = new Cal_Result_Data();
-        Data.ScoreArray = this.SaveScoreArray;
-        Data.footdnaArray = this.SaveDnaArray;
+        Data.ScoreArray = this.ScoreArray;
+        Data.footdnaArray = this.FootDnaArray;
         return Data;
     }
 

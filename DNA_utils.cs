@@ -3,11 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class CrossOverUtil
+{
+    public static dna_a get(dna_a dna1, dna_a dna2)
+    {
+        if(Random.value < 0.5f)
+        {
+            return dna1;
+        }
+        else
+        {
+            return dna2;
+        }
+    }
+}
 public struct Cal_Result_Data
 {
     public float[] ScoreArray;
     public FootDna[] footdnaArray;
 }
+
+public struct DNA_set
+{
+    public dna_a dna1, dna2, dna3;
+}
+
 public class dna_a
 {
     public int angle_max, angle_min, half_speed_max, half_speed_min;
@@ -131,7 +151,7 @@ public class FootDna
         this.spider_c.Reset(is_Transform);
     }
 
-    private float mutate_a(float angle, int min, int max)
+    private float mutate(float angle, int min, int max)
     {
         float new_angle;
         int a = (int)Mathf.Max(-10, min - (int)angle);
@@ -139,31 +159,31 @@ public class FootDna
         new_angle = angle + (float)Random.Range(a,b);
         return new_angle;
     }
-    public dna_a self_mutation_a(dna_a dna)
+    public dna_a mutation_a(dna_a dna)
     {
         //angle_x
         if(Random.value<this.mutation_rate_angle)
-        {dna.f1_angle_x = this.mutate_a(dna.f1_angle_x, dna.angle_min, dna.angle_max);}
+        {dna.f1_angle_x = this.mutate(dna.f1_angle_x, dna.angle_min, dna.angle_max);}
         if(Random.value<this.mutation_rate_angle)
-        {dna.f2_angle_x = this.mutate_a(dna.f2_angle_x, dna.angle_min, dna.angle_max);}
+        {dna.f2_angle_x = this.mutate(dna.f2_angle_x, dna.angle_min, dna.angle_max);}
         if(Random.value<this.mutation_rate_angle)
-        {dna.f3_angle_x = this.mutate_a(dna.f3_angle_x, dna.angle_min, dna.angle_max);}
+        {dna.f3_angle_x = this.mutate(dna.f3_angle_x, dna.angle_min, dna.angle_max);}
 
         //angle_z
         if(Random.value<this.mutation_rate_angle)
-        {dna.f1_angle_z = this.mutate_a(dna.f1_angle_z, dna.angle_min, dna.angle_max);}
+        {dna.f1_angle_z = this.mutate(dna.f1_angle_z, dna.angle_min, dna.angle_max);}
         if(Random.value<this.mutation_rate_angle)
-        {dna.f2_angle_z = this.mutate_a(dna.f2_angle_z, dna.angle_min, dna.angle_max);}
+        {dna.f2_angle_z = this.mutate(dna.f2_angle_z, dna.angle_min, dna.angle_max);}
         if(Random.value<this.mutation_rate_angle)
-        {dna.f3_angle_z = this.mutate_a(dna.f3_angle_z, dna.angle_min, dna.angle_max);}
+        {dna.f3_angle_z = this.mutate(dna.f3_angle_z, dna.angle_min, dna.angle_max);}
         
         //hald_speed
         if(Random.value<this.mutation_rate_speed)
-        {dna.f1_half_speed = this.mutate_a(dna.f1_half_speed, dna.half_speed_min, dna.half_speed_max);}
+        {dna.f1_half_speed = this.mutate(dna.f1_half_speed, dna.half_speed_min, dna.half_speed_max);}
         if(Random.value<this.mutation_rate_speed)
-        {dna.f2_half_speed = this.mutate_a(dna.f2_half_speed, dna.half_speed_min, dna.half_speed_max);}
+        {dna.f2_half_speed = this.mutate(dna.f2_half_speed, dna.half_speed_min, dna.half_speed_max);}
         if(Random.value<this.mutation_rate_speed)
-        { dna.f3_half_speed = this.mutate_a(dna.f3_half_speed, dna.half_speed_min, dna.half_speed_max);}
+        { dna.f3_half_speed = this.mutate(dna.f3_half_speed, dna.half_speed_min, dna.half_speed_max);}
 
         // W
         if(Random.value<this.mutation_rate_w) {dna.w_x_1 = W[(int)Random.Range(0,2)];}
@@ -180,10 +200,10 @@ public class FootDna
 
         return dna;
     }
-    public void self_mutation()
+    public void mutation()
     {
-        this.dna1 = this.self_mutation_a(this.dna1);
-        this.dna2 = this.self_mutation_a(this.dna2);
-        this.dna3 = this.self_mutation_a(this.dna3);
+        this.dna1 = this.mutation_a(this.dna1);
+        this.dna2 = this.mutation_a(this.dna2);
+        this.dna3 = this.mutation_a(this.dna3);
     }
 }

@@ -3,12 +3,63 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct MutationRates
+static class RandomUtils
 {
-    public float mutation_rate_angle;
-    public float mutation_rate_speed;
-    public float mutation_rate_w;
-    public float mutation_rate_color;
+    public static FootDna[] Choice(this cs_system.Random rnd,
+                    IEnumerable<FootDna> choices, IEnumerable<float> weights,
+                    int k = 1, bool is_replacement = true)
+    {
+        var cumulativeWeight= new List<float>();
+        float last= 0;
+        foreach (var cur in weights)
+        {
+            last += cur;
+            cumulativeWeight.Add(last);
+        }
+        FootDna[] SelectDnaArray = new FootDna[k];
+        List<int> SelectedIndexArray = new List<int>();
+        int cnt = 0;
+        while(cnt<k)
+        {
+            double choice = rnd.NextDouble();
+            int i= 0;
+            foreach (var cur in choices)
+            {
+                if (choice < cumulativeWeight[i])
+                {
+                    if(is_replacement)
+                    {
+                        SelectDnaArray[cnt] = cur;
+                        SelectedIndexArray.Add(i);
+                        cnt += 1;
+                    }
+                    else
+                    {
+                        bool flag = true;
+                        foreach (int idx in SelectedIndexArray)
+                        {
+                            if(idx==i)
+                            {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        if(flag)
+                        {
+                            SelectDnaArray[cnt] = cur;
+                            SelectedIndexArray.Add(i);
+                            cnt += 1;
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+                i++;
+            }
+        }
+        return SelectDnaArray;
+    }
 }
 
 public class GA_Manager : MonoBehaviour
@@ -39,25 +90,29 @@ public class GA_Manager : MonoBehaviour
     public int half_speed_max = 50;
     public int half_speed_min = 15;
     private int trail_cnt = 1;
-    //private int mean_cnt = 1;
+    
+    private int mean_cnt = 0;
     public int mean_num = 1;
 
     public float prevMaxScore = (float)-1e10;
+    
+    float MaxScore = (float)-1e10;
     public enum GAName {SGA, IGS, SS, CHC, ER, MGG}
     [SerializeField]
-    GAName ga_name = GAName.SGA;
+    GAName GA_Name = GAName.SGA;
+
+    private SpiderManager spider_m_sc;
 
     // Start is called before the first frame update
     void Start()
     {
         GameObject spider_m = Instantiate(this.spider_manager) as GameObject;
-        SpiderManager spider_m_sc = spider_m.GetComponent<SpiderManager>();
+        this.spider_m_sc = spider_m.GetComponent<SpiderManager>();
 
-        spider_m.name = "Spider Manager " + ga_name;
+        spider_m.name = "Spider Manager " + GA_Name;
 
         spider_m_sc.num_spider = this.num_spider;
 
-        spider_m_sc.save_spider_num = this.save_spider_num;
         spider_m_sc.mutation_rate_angle = this.mutation_rate_angle;
         spider_m_sc.mutation_rate_speed = this.mutation_rate_speed;
         spider_m_sc.mutation_rate_w = this.mutation_rate_w;
@@ -83,10 +138,74 @@ public class GA_Manager : MonoBehaviour
         this.acc_time += Time.deltaTime;
         if(this.acc_time >= this.trail_time)
         {
-            
+            this.mean_cnt += 1;
+            if(this.mean_cnt<this.mean_num)
+            {
+                this.spider_m_sc.cal_scores();
+            }
+            else
+            {
+                Cal_Result_Data data = this.spider_m_sc.get_result();
+                SGA(data);
+                this.mean_cnt = 0;
+            }
             this.acc_time = 0;
             this.trail_cnt += 1;
-            int a = 2*mean_num;
         }
+    }
+
+    public DNA_set CrossOver(FootDna FootDna1, FootDna FootDna2)
+    {
+        dna_a dna1 = CrossOverUtil.get(FootDna1.dna1, FootDna2.dna1);
+        dna_a dna2 = CrossOverUtil.get(FootDna1.dna2, FootDna2.dna2);
+        dna_a dna3 = CrossOverUtil.get(FootDna1.dna3, FootDna2.dna3);
+
+        DNA_set dna;
+        dna.dna1 = dna1;
+        dna.dna2 = dna2;
+        dna.dna3 = dna3;
+        return dna;
+    }
+
+    void SGA(Cal_Result_Data data)
+    {
+        FootDna[] SortedFootDnaArray  = data.footdnaArray;
+        float[] SortedScoreArray = data.ScoreArray;
+        float[] SelectionWeightArray = new float[SortedScoreArray.Length];
+        float ScoreSum = 0;
+        float MaxScore = (float)-1e10;
+
+        for(int i=0; i<SortedScoreArray.Length; i++)
+        {
+            if(MaxScore < SortedScoreArray[i])
+            {
+                MaxScore = SortedScoreArray[i];
+            }
+            
+            SelectionWeightArray[i] = Mathf.Exp(SortedScoreArray[i]);
+            ScoreSum += SelectionWeightArray[i];
+        }
+        for(int i=0; i<SortedScoreArray.Length; i++)
+        {
+            SelectionWeightArray[i] /= ScoreSum;
+        }
+
+        Debug.Log(MaxScore);
+
+        DNA_set[] ChildrenArray = new DNA_set[SortedFootDnaArray.Length];
+        cs_system.Random rnd= new cs_system.Random();
+        for (int i = 0; i < SortedFootDnaArray.Length; i++)
+        {
+            FootDna[] SelectDnaArray = rnd.Choice(SortedFootDnaArray, SelectionWeightArray, 2, false);
+            DNA_set dna_set = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
+            ChildrenArray[i] = dna_set;
+        }
+        int seed = Random.Range(0,10000);
+        this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
+    }
+
+    public float get_acc_time()
+    {
+        return this.acc_time;
     }
 }

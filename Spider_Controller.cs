@@ -132,6 +132,7 @@ public class Spider_Controller : MonoBehaviour
         );
 
         start_pos = transform.position;
+        start_rotation = transform.rotation.eulerAngles;
     }
 
     // Update is called once per frame
