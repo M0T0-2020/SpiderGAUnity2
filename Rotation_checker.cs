@@ -22,7 +22,7 @@ public class Rotation_checker : MonoBehaviour
     {
         if (other.gameObject.tag == "floor")
         {
-            this.sp_cont.is_rotaion = true;
+            this.sp_cont.stop_move();
             //Debug.Log("hit!!!");
         }
     }

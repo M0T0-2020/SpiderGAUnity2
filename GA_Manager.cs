@@ -127,7 +127,7 @@ public class GA_Manager : MonoBehaviour
         GameObject spider_m = Instantiate(this.spider_manager) as GameObject;
         this.spider_m_sc = spider_m.GetComponent<SpiderManager>();
 
-        spider_m.name = "Spider Manager " + GA_Name;
+        spider_m.name = "Spider Manager " + GA_Name.ToString();
 
         spider_m_sc.num_spider = this.num_spider;
 
@@ -166,7 +166,12 @@ public class GA_Manager : MonoBehaviour
             else
             {
                 Cal_Result_Data data = this.spider_m_sc.get_result();
-                SGA(data);
+                
+                if(GA_Name.ToString()=="SGA")
+                {
+                    SGA(data);
+                }
+                
                 this.mean_cnt = 0;
             }
             this.acc_time = 0;

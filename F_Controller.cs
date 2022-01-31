@@ -27,6 +27,7 @@ public class F_Controller : MonoBehaviour
     public float w_z = -1;
 
     public bool is_Debug = false;
+    public bool is_rotaion = false;
 
     //private float f_r_a_x, f_r_a_z, f_c_x, f_c_z, f_w_x, f_w_z; 
     // Start is called before the first frame update
@@ -75,59 +76,62 @@ public class F_Controller : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!first)
+        if(!is_rotaion)
         {
-            cnt_z += 1;
-            cnt_x += 1;
-
-            Vector3 vec = new Vector3(w_x*rotation_angle_x/speed, 0.0f, w_z*rotation_angle_z/speed);
-            
-            if(is_Debug){
-            Debug.Log(vec);
-            Debug.Log(w_x);
-            Debug.Log(rotation_angle_x);
-            Debug.Log(speed);
-            }
-            transform.Rotate(vec);
-            
-            if(speed/2<=cnt_z)
+            if(!first)
             {
-                cnt_z = 0;
-                w_z *= -1;
-            }
+                cnt_z += 1;
+                cnt_x += 1;
 
-            if(speed<=cnt_x)
-            {
-                cnt_x = 0;
-                w_x *= -1;
-            }
-
-        }
-        else
-        {
-            cnt_z += 1;
-            cnt_x += 1;
-
-            Vector3 vec = new Vector3(w_x*rotation_angle_x/speed, 0.0f, w_z*rotation_angle_z/speed);
-            if(is_Debug){
-            Debug.Log(vec);
-            Debug.Log(rotation_angle_x);
-
-            }
-            transform.Rotate(vec);
-
-            if(speed/2<=cnt_z)
-            {
-                cnt_x = 0;
-                w_x *= -1;
+                Vector3 vec = new Vector3(w_x*rotation_angle_x/speed, 0.0f, w_z*rotation_angle_z/speed);
                 
-                cnt_z = 0;
-                w_z *= -1;
+                if(is_Debug){
+                Debug.Log(vec);
+                Debug.Log(w_x);
+                Debug.Log(rotation_angle_x);
+                Debug.Log(speed);
+                }
+                transform.Rotate(vec);
+                
+                if(speed/2<=cnt_z)
+                {
+                    cnt_z = 0;
+                    w_z *= -1;
+                }
 
-                first = false;
+                if(speed<=cnt_x)
+                {
+                    cnt_x = 0;
+                    w_x *= -1;
+                }
 
             }
-        }
+            else
+            {
+                cnt_z += 1;
+                cnt_x += 1;
 
+                Vector3 vec = new Vector3(w_x*rotation_angle_x/speed, 0.0f, w_z*rotation_angle_z/speed);
+                if(is_Debug){
+                Debug.Log(vec);
+                Debug.Log(rotation_angle_x);
+
+                }
+                transform.Rotate(vec);
+
+                if(speed/2<=cnt_z)
+                {
+                    cnt_x = 0;
+                    w_x *= -1;
+                    
+                    cnt_z = 0;
+                    w_z *= -1;
+
+                    first = false;
+
+                }
+            }
+
+        }
     }
 }

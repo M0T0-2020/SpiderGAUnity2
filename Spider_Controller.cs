@@ -11,13 +11,10 @@ public class Spider_Controller : MonoBehaviour
 
     public Vector3 start_pos, start_rotation;
 
+
     public bool is_rotaion = false;
 
-    //Transform foot1, t_1, capsule;
-
     public bool is_Debug = false;
-    public float cos_value = 0;
-    public float arg_value = 0;
 
     public Gene gene;
 
@@ -89,7 +86,7 @@ public class Spider_Controller : MonoBehaviour
 
         start_pos = transform.position;
         start_rotation = transform.localEulerAngles;
-        is_rotaion = false;
+        reset_is_rotation();
         if(is_Debug){
             Debug.Log(start_pos);
            //Debug.Log( "gene.foot1.g1_2.half_speed : " + gene.foot1.g1_2.half_speed );
@@ -138,7 +135,20 @@ public class Spider_Controller : MonoBehaviour
 
         start_pos = transform.position;
         start_rotation = transform.localEulerAngles;
-        is_rotaion = false;
+        reset_is_rotation();
+
+    }
+
+    public void stop_move()
+    {
+        this.is_rotaion = true;
+        this.gene.stop_move();
+    }
+
+    public void reset_is_rotation()
+    {
+        this.is_rotaion = false;
+        this.gene.reset_is_rotation();
     }
 
     // Update is called once per frame
@@ -210,6 +220,20 @@ public class Gene
                             );
         }
     }
+
+    public void stop_move()
+    {
+        this.foot1.stop_move();
+        this.foot2.stop_move();
+        this.foot3.stop_move();
+    }
+
+    public void reset_is_rotation()
+    {
+        this.foot1.reset_is_rotation();
+        this.foot2.reset_is_rotation();
+        this.foot3.reset_is_rotation();
+    }
 }
 
 public class Gene_mini
@@ -230,6 +254,28 @@ public class Gene_mini
         this.g1_2 = GameObject.Find(f2_name+"/GameObject(1)").GetComponent<F_Controller>();
         this.g2_2 = GameObject.Find(f2_name+"/GameObject(1)/GameObject(2)").GetComponent<F_Controller>();
         this.g3_2 = GameObject.Find(f2_name+"/GameObject(1)/GameObject(2)/GameObject(3)").GetComponent<F_Controller>();
+    }
+
+    public void stop_move()
+    {
+        this.g1_1.is_rotaion = true;
+        this.g2_1.is_rotaion = true;
+        this.g3_1.is_rotaion = true;
+
+        this.g1_2.is_rotaion = true;
+        this.g2_2.is_rotaion = true;
+        this.g3_2.is_rotaion = true;        
+    }
+
+    public void reset_is_rotation()
+    {
+        this.g1_1.is_rotaion = false;
+        this.g2_1.is_rotaion = false;
+        this.g3_1.is_rotaion = false;
+
+        this.g1_2.is_rotaion = false;
+        this.g2_2.is_rotaion = false;
+        this.g3_2.is_rotaion = false;
     }
 
     public void debug_transform()
