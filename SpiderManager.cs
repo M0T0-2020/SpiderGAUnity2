@@ -26,6 +26,7 @@ public class SpiderManager : MonoBehaviour
     private GameObject[] SpiderArray;
     private FootDna[] FootDnaArray;
     private float[] ScoreArray;
+    //private bool is_rotation = false;
 
     void Awake()
     {
@@ -113,7 +114,7 @@ public class SpiderManager : MonoBehaviour
             FootDna tmp_fdna = this.FootDnaArray[i];
 
             //ひっくり返ったらゼロ
-            if( Mathf.Abs( tmp_fdna.spider_c.start_rotation.x - tmp_spider.transform.eulerAngles.x) > 130.0f)
+            if( tmp_fdna.spider_c.is_rotaion)
             {
                 this.ScoreArray[i] += 0.0f;
             }

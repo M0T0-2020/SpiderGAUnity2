@@ -62,6 +62,21 @@ static class RandomUtils
     }
 }
 
+public class ExpCalulator
+{
+    private float t;
+    public ExpCalulator(float t)
+    {
+        this.t = t;    
+    }
+
+    public float Exp(float x)
+    {
+        float value = Mathf.Exp(x/this.t);
+        return value;
+    }
+}
+
 public class GA_Manager : MonoBehaviour
 {
     public GameObject spider_manager;
@@ -103,6 +118,9 @@ public class GA_Manager : MonoBehaviour
 
     private SpiderManager spider_m_sc;
 
+    public float exp_t = 5;
+    ExpCalulator exp_with_t;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -130,6 +148,8 @@ public class GA_Manager : MonoBehaviour
         spider_m_sc.is_Debug = this.is_Debug;
 
         spider_m_sc.CreateManager();
+
+        exp_with_t = new ExpCalulator(exp_t);
     }
 
     // Update is called once per frame
@@ -182,7 +202,7 @@ public class GA_Manager : MonoBehaviour
                 MaxScore = SortedScoreArray[i];
             }
             
-            SelectionWeightArray[i] = Mathf.Exp(SortedScoreArray[i]);
+            SelectionWeightArray[i] = exp_with_t.Exp(SortedScoreArray[i]);
             ScoreSum += SelectionWeightArray[i];
         }
         for(int i=0; i<SortedScoreArray.Length; i++)

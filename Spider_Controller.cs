@@ -11,9 +11,13 @@ public class Spider_Controller : MonoBehaviour
 
     public Vector3 start_pos, start_rotation;
 
+    public bool is_rotaion = false;
+
     //Transform foot1, t_1, capsule;
 
     public bool is_Debug = false;
+    public float cos_value = 0;
+    public float arg_value = 0;
 
     public Gene gene;
 
@@ -84,7 +88,8 @@ public class Spider_Controller : MonoBehaviour
         );
 
         start_pos = transform.position;
-        start_rotation = transform.rotation.eulerAngles;
+        start_rotation = transform.localEulerAngles;
+        is_rotaion = false;
         if(is_Debug){
             Debug.Log(start_pos);
            //Debug.Log( "gene.foot1.g1_2.half_speed : " + gene.foot1.g1_2.half_speed );
@@ -132,7 +137,8 @@ public class Spider_Controller : MonoBehaviour
         );
 
         start_pos = transform.position;
-        start_rotation = transform.rotation.eulerAngles;
+        start_rotation = transform.localEulerAngles;
+        is_rotaion = false;
     }
 
     // Update is called once per frame
@@ -145,10 +151,6 @@ public class Spider_Controller : MonoBehaviour
         //g.transform.Rotate( 12.0f, 0f ,0f );
         }
     }
-
-    public void Reset_position()
-    {
-    } 
 }
 
 
