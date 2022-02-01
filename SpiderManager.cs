@@ -171,12 +171,12 @@ public class SpiderManager : MonoBehaviour
                     float score_k = this.ScoreArray[k];
                     if(score_k > score_k_m1)
                     {
-                            this.ScoreArray[k-1] = score_k;
-                            this.ScoreArray[k] = score_k_m1;
+                        this.ScoreArray[k-1] = score_k;
+                        this.ScoreArray[k] = score_k_m1;
 
-                            FootDna footdna_k = this.FootDnaArray[k];
-                            this.FootDnaArray[k] = this.FootDnaArray[k-1];
-                            this.FootDnaArray[k-1] = footdna_k;
+                        FootDna footdna_k = this.FootDnaArray[k];
+                        this.FootDnaArray[k] = this.FootDnaArray[k-1];
+                        this.FootDnaArray[k-1] = footdna_k;
                     }
                     else{break;}
                 }

@@ -104,7 +104,9 @@ public class ExpCalulator
 
 public class GA_Manager : MonoBehaviour
 {
-    FootDna[] PrevFootDna;
+    FootDna[] StoreFootDnaArray;
+    float[] StoreScoreArray;
+    Dictionary<int, List<int>> FamilyGroupIndexDic;
     public GameObject spider_manager;
     public float mutation_rate_angle;
     public float mutation_rate_speed;
@@ -137,7 +139,7 @@ public class GA_Manager : MonoBehaviour
 
     public float prevMaxScore = (float)-1e10;
     
-    float MaxScore = (float)-1e10;
+    //float MaxScore = (float)-1e10;
     public enum GAName {SGA, IGS, SS, CHC, ER, MGG}
     [SerializeField]
     GAName GA_Name = GAName.SGA;
@@ -150,7 +152,12 @@ public class GA_Manager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        PrevFootDna = new FootDna[num_spider];
+        //set num_spider to even value
+        num_spider = 2*(int)(num_spider/2);
+        
+        StoreFootDnaArray = new FootDna[num_spider];
+        StoreScoreArray = new float[num_spider];
+        FamilyGroupIndexDic = new Dictionary<int, List<int>>(num_spider);
 
         GameObject spider_m = Instantiate(this.spider_manager) as GameObject;
         this.spider_m_sc = spider_m.GetComponent<SpiderManager>();
@@ -250,11 +257,12 @@ public class GA_Manager : MonoBehaviour
         FootDna[] SortedFootDnaArray  = data.footdnaArray;
         float[] SortedScoreArray = data.ScoreArray;
         float[] SelectionWeightArray = new float[SortedScoreArray.Length];
+        int length = SortedFootDnaArray.Length;
         float ScoreSum = 0;
         float MaxScore = (float)-1e10;
         float ScoreMean = 0;
 
-        for(int i=0; i<SortedScoreArray.Length; i++)
+        for(int i=0; i<length; i++)
         {
             float score = SortedScoreArray[i];
             ScoreMean += score/SortedFootDnaArray.Length;
@@ -264,29 +272,30 @@ public class GA_Manager : MonoBehaviour
             }
             
         }
+        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" + ScoreMean);
         
         this.exp_with_t.set_t_value(0.5f*MaxScore);
         
-        for(int i=0; i<SortedScoreArray.Length; i++)
+        for(int i=0; i<length; i++)
         {
             SelectionWeightArray[i] = exp_with_t.Exp(SortedScoreArray[i]);
             ScoreSum += SelectionWeightArray[i];
         }
-        for(int i=0; i<SortedScoreArray.Length; i++)
+        for(int i=0; i<length; i++)
         {
             SelectionWeightArray[i] /= ScoreSum;
         }
-        
-        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" + ScoreMean);
 
         DNA_set[] ChildrenArray = new DNA_set[SortedFootDnaArray.Length];
         cs_system.Random rnd = new cs_system.Random();
-        for (int i = 0; i < SortedFootDnaArray.Length; i++)
+        for (int i = 0; i < (int)(length/2); i++)
         {
             FootDna[] SelectDnaArray = rnd.Choice(choices:SortedFootDnaArray, weights:SelectionWeightArray,
                                                                         k:2, is_replacement:false);
-            DNA_set dna_set = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
-            ChildrenArray[i] = dna_set;
+            DNA_set dna_set1 = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
+            DNA_set dna_set2 = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
+            ChildrenArray[2*i] = dna_set1;
+            ChildrenArray[2*i+1] = dna_set2;
         }
         int seed = Random.Range(0,10000);
         this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
@@ -387,7 +396,7 @@ public class GA_Manager : MonoBehaviour
         for (int i = 0; i < SortedFootDnaArray.Length; i++)
         {
             float score = SortedScoreArray[i];
-            if(score<=MinScore)
+            if(score>MinScore)
             {
                 FootDna[] SelectDnaArray = rnd.Choice(choices:SortedFootDnaArray, weights:SelectionWeightArray,
                                                             k:2, is_replacement:true);
@@ -406,12 +415,6 @@ public class GA_Manager : MonoBehaviour
     void CHC(Cal_Result_Data data)
     {
         FootDna[] FootDnaArray  = data.footdnaArray;
-        PrevFootDna = FootDnaArray;
-        if(this.trail_cnt==1)
-        {}
-        else
-        {}
-        
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length; 
         float ScoreSum = 0;
@@ -431,26 +434,278 @@ public class GA_Manager : MonoBehaviour
 
         Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
 
+        if(this.trail_cnt==1)
+        {
+            if(is_Debug)
+            {
+                Debug.Log("first CHC");
+            }
+            StoreFootDnaArray = FootDnaArray;
+            StoreScoreArray = ScoreArray;
+        }
+        else
+        {
+            //cat data
+            FootDna[] AllFootDnaArray = new FootDna[2*num_spider];
+            float[] AllScoreArray = new float[2*num_spider];
+            for (int i = 0; i < length; i++)
+            {
+                AllFootDnaArray[i] = StoreFootDnaArray[i];
+                AllScoreArray[i] = StoreScoreArray[i];
+            }
+            for (int i = 0; i < length; i++)
+            {
+                AllFootDnaArray[length+i] = FootDnaArray[i];
+                AllScoreArray[length+i] = ScoreArray[i];
+            }
+
+            //sort
+            for (int i = 0; i < AllFootDnaArray.Length; i++)
+            {
+                for (int k = i; k > 0; k--)
+                {
+                    float score_k_m1 = AllScoreArray[k-1];
+                    float score_k = AllScoreArray[k];
+                    if(score_k > score_k_m1)
+                    {
+                        AllScoreArray[k-1] = score_k;
+                        AllScoreArray[k] = score_k_m1;
+
+                        FootDna footdna_k = AllFootDnaArray[k];
+                        AllFootDnaArray[k] = AllFootDnaArray[k-1];
+                        AllFootDnaArray[k-1] = footdna_k;
+                    }
+                    else{break;}
+                }
+            }
+
+            // Store good dna
+            for (int i = 0; i < length; i++)
+            {
+                StoreFootDnaArray[i] = AllFootDnaArray[i];
+                StoreScoreArray[i] = AllScoreArray[i];
+            }
+
+        }
         
         DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
-
         cs_system.Random rnd = new cs_system.Random();
-        for (int i = 0; i < length; i++)
+        for (int i = 0; i < (int)(length/2); i++)
         {
             int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
             int idx1 = idx_arry[0];
             int idx2 = idx_arry[1];
-            DNA_set dna_set = CrossOver(FootDnaArray[idx1], FootDnaArray[idx2]);
-            ChildrenArray[i] = dna_set;
+            DNA_set dna_set1 = CrossOver(StoreFootDnaArray[idx1], StoreFootDnaArray[idx2]);
+            DNA_set dna_set2 = CrossOver(StoreFootDnaArray[idx1], StoreFootDnaArray[idx2]);
+            ChildrenArray[2*i] = dna_set1;
+            ChildrenArray[2*i+1] = dna_set2;
         }
         int seed = Random.Range(0,10000);
         this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
     }
 
     void ER(Cal_Result_Data data)
-    {}
+    {
+        FootDna[] FootDnaArray  = data.footdnaArray;
+        float[] ScoreArray = data.ScoreArray;
+        int length = FootDnaArray.Length; 
+        float ScoreSum = 0;
+        float ScoreMean = 0;
+        float MaxScore = (float)-1e10;
+
+        for (int i = 0; i < length; i++)
+        {
+            float score = ScoreArray[i];
+            ScoreSum += score;
+            ScoreMean += score/length;
+            if(MaxScore < score)
+            {
+                MaxScore = score;
+            }
+        }
+
+        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
+        if(this.trail_cnt==1)
+        {
+            if(is_Debug)
+            {
+                Debug.Log("first ER");
+            }
+            StoreFootDnaArray = FootDnaArray;
+            StoreScoreArray = ScoreArray;
+        }
+        else
+        {
+            FootDna[] newStoreFootDnaArray = new FootDna[StoreFootDnaArray.Length];
+            float[] newStoreScoreArray = new float[StoreFootDnaArray.Length];
+            //take best 2 indivisual in each families
+            foreach(List<int> idx_list in FamilyGroupIndexDic.Values)
+            {
+                int idx1 = idx_list[0];
+                int idx2 = idx_list[1];
+
+                int StoreIdx1 = idx_list[2];
+                int StoreIdx2 = idx_list[3];
+
+                float childScore1 = ScoreArray[idx1];
+                float childScore2 = ScoreArray[idx2];
+                float score1 = StoreScoreArray[StoreIdx1];
+                float score2 = StoreScoreArray[StoreIdx2];
+
+                FootDna[] familyFootDnaArry = new FootDna[] {
+                    FootDnaArray[idx1], FootDnaArray[idx2],
+                    StoreFootDnaArray[StoreIdx1], StoreFootDnaArray[StoreIdx2]
+                };
+                float[] scorearry = new float[] {childScore1, childScore2, score1, score2};
+
+                //sort
+                for (int i = 0; i < scorearry.Length; i++)
+                {
+                    for (int k = i; k > 0; k--)
+                    {
+                        float score_k_m1 = scorearry[k-1];
+                        float score_k = scorearry[k];
+                        if(score_k > score_k_m1)
+                        {
+                            scorearry[k-1] = score_k;
+                            scorearry[k] = score_k_m1;
+
+                            FootDna footdna_k = familyFootDnaArry[k];
+                            familyFootDnaArry[k] = familyFootDnaArry[k-1];
+                            familyFootDnaArry[k-1] = footdna_k;
+                        }
+                        else{break;}
+                    }
+                }
+
+                //take
+                newStoreFootDnaArray[idx1] = familyFootDnaArry[0];
+                newStoreFootDnaArray[idx2] = familyFootDnaArry[1];
+                newStoreScoreArray[idx1] = scorearry[0];
+                newStoreScoreArray[idx2] = scorearry[1];
+            }
+
+            StoreFootDnaArray = newStoreFootDnaArray;
+            StoreScoreArray = newStoreScoreArray;
+        }
+
+        DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
+        cs_system.Random rnd = new cs_system.Random();
+        for (int i = 0; i < (int)(length/2); i++)
+        {
+            int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
+            int idx1 = idx_arry[0];
+            int idx2 = idx_arry[1];
+            DNA_set dna_set1 = CrossOver(StoreFootDnaArray[idx1], StoreFootDnaArray[idx2]);
+            DNA_set dna_set2 = CrossOver(StoreFootDnaArray[idx1], StoreFootDnaArray[idx2]);
+            ChildrenArray[2*i] = dna_set1;
+            ChildrenArray[2*i+1] = dna_set2;
+            FamilyGroupIndexDic[i] = new List<int>{2*i, 2*i+1, idx1, idx2};
+        }
+        int seed = Random.Range(0,10000);
+        this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
+    }
     void MGG(Cal_Result_Data data)
-    {}
+    {
+        FootDna[] FootDnaArray  = data.footdnaArray;
+        float[] ScoreArray = data.ScoreArray;
+        int length = FootDnaArray.Length; 
+        float ScoreSum = 0;
+        float ScoreMean = 0;
+        float MaxScore = (float)-1e10;
+
+        for (int i = 0; i < length; i++)
+        {
+            float score = ScoreArray[i];
+            ScoreSum += score;
+            ScoreMean += score/length;
+            if(MaxScore < score)
+            {
+                MaxScore = score;
+            }
+        }
+
+        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
+        if(this.trail_cnt==1)
+        {
+            if(is_Debug)
+            {
+                Debug.Log("first MGG");
+            }
+            StoreFootDnaArray = FootDnaArray;
+            StoreScoreArray = ScoreArray;
+        }
+        else
+        {
+            FootDna[] newStoreFootDnaArray = new FootDna[StoreFootDnaArray.Length];
+            float[] newStoreScoreArray = new float[StoreFootDnaArray.Length];
+            //take best 2 indivisual in each families
+            foreach(List<int> idx_list in FamilyGroupIndexDic.Values)
+            {
+                int idx1 = idx_list[0];
+                int idx2 = idx_list[1];
+
+                int StoreIdx1 = idx_list[2];
+                int StoreIdx2 = idx_list[3];
+
+                float childScore1 = ScoreArray[idx1];
+                float childScore2 = ScoreArray[idx2];
+                float score1 = StoreScoreArray[StoreIdx1];
+                float score2 = StoreScoreArray[StoreIdx2];
+
+                FootDna[] familyFootDnaArry = new FootDna[] {
+                    FootDnaArray[idx1], FootDnaArray[idx2],
+                    StoreFootDnaArray[StoreIdx1], StoreFootDnaArray[StoreIdx2]
+                };
+                float[] scorearry = new float[] {childScore1, childScore2, score1, score2};
+
+                //sort
+                for (int i = 0; i < scorearry.Length; i++)
+                {
+                    for (int k = i; k > 0; k--)
+                    {
+                        float score_k_m1 = scorearry[k-1];
+                        float score_k = scorearry[k];
+                        if(score_k > score_k_m1)
+                        {
+                            scorearry[k-1] = score_k;
+                            scorearry[k] = score_k_m1;
+
+                            FootDna footdna_k = familyFootDnaArry[k];
+                            familyFootDnaArry[k] = familyFootDnaArry[k-1];
+                            familyFootDnaArry[k-1] = footdna_k;
+                        }
+                        else{break;}
+                    }
+                }
+
+                //take
+                newStoreFootDnaArray[idx1] = familyFootDnaArry[0];
+                newStoreFootDnaArray[idx2] = familyFootDnaArry[1];
+                newStoreScoreArray[idx1] = scorearry[0];
+                newStoreScoreArray[idx2] = scorearry[1];
+            }
+
+            StoreFootDnaArray = newStoreFootDnaArray;
+            StoreScoreArray = newStoreScoreArray;
+        }
+
+        DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
+        cs_system.Random rnd = new cs_system.Random();
+        for (int i = 0; i < (int)(length/2); i++)
+        {
+            int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
+            int idx1 = idx_arry[0];
+            int idx2 = idx_arry[1];
+            DNA_set dna_set1 = CrossOver(StoreFootDnaArray[idx1], StoreFootDnaArray[idx2]);
+            DNA_set dna_set2 = CrossOver(StoreFootDnaArray[idx1], StoreFootDnaArray[idx2]);
+            ChildrenArray[2*i] = dna_set1;
+            ChildrenArray[2*i+1] = dna_set2;
+            FamilyGroupIndexDic[i] = new List<int>{2*i, 2*i+1, idx1, idx2};
+        }
+        int seed = Random.Range(0,10000);
+        this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
+    }
 
     public float get_acc_time()
     {
