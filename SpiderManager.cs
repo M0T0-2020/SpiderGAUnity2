@@ -61,12 +61,20 @@ public class SpiderManager : MonoBehaviour
             }
             _spider.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
             _spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
-            dna_a dna1 = new dna_a(this.angle_max, this.angle_min, this.half_speed_max, this.half_speed_min);
-            dna_a dna2 = new dna_a(this.angle_max, this.angle_min, this.half_speed_max, this.half_speed_min);
-            dna_a dna3 = new dna_a(this.angle_max, this.angle_min, this.half_speed_max, this.half_speed_min);
+            dna_a dna1 = new dna_a(angle_max:this.angle_max, angle_min:this.angle_min,
+                        half_speed_max:this.half_speed_max, half_speed_min:this.half_speed_min,
+                        mutation_rate_angle:mutation_rate_angle, mutation_rate_speed:mutation_rate_speed,
+                        mutation_rate_w:mutation_rate_w, mutation_rate_color:mutation_rate_color);
+            dna_a dna2 = new dna_a(angle_max:this.angle_max, angle_min:this.angle_min,
+                        half_speed_max:this.half_speed_max, half_speed_min:this.half_speed_min,
+                        mutation_rate_angle:mutation_rate_angle, mutation_rate_speed:mutation_rate_speed,
+                        mutation_rate_w:mutation_rate_w, mutation_rate_color:mutation_rate_color);
+            dna_a dna3 = new dna_a(angle_max:this.angle_max, angle_min:this.angle_min,
+                        half_speed_max:this.half_speed_max, half_speed_min:this.half_speed_min,
+                        mutation_rate_angle:mutation_rate_angle, mutation_rate_speed:mutation_rate_speed,
+                        mutation_rate_w:mutation_rate_w, mutation_rate_color:mutation_rate_color);
 
-            FootDna f_dna = new FootDna(SC, dna1, dna2, dna3, this.mutation_rate_angle, this.mutation_rate_speed,
-                                        this.mutation_rate_w, this.mutation_rate_color);
+            FootDna f_dna = new FootDna(SC, dna1, dna2, dna3);
             f_dna.set_gene(false);
 
             this.SpiderArray[i] = _spider;
@@ -96,9 +104,7 @@ public class SpiderManager : MonoBehaviour
             _spider.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
             _spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
 
-            FootDna f_dna = new FootDna(SC, new_fdna.dna1, new_fdna.dna2, new_fdna.dna3, this.mutation_rate_angle,
-                                            this.mutation_rate_speed, this.mutation_rate_w, this.mutation_rate_color);
-            f_dna.mutation();
+            FootDna f_dna = new FootDna(SC, new_fdna.dna1, new_fdna.dna2, new_fdna.dna3);
             f_dna.set_gene(true);
 
             this.SpiderArray[i] = _spider;
@@ -130,8 +136,7 @@ public class SpiderManager : MonoBehaviour
             float px = this.Range_x*i;
             tmp_spider.transform.eulerAngles = new Vector3(0.0f, 0.0f, 0.0f);
             tmp_spider.transform.position = new Vector3(px, 1.5f, this.start_pos_z);
-            FootDna f_dna = new FootDna(SC, tmp_fdna.dna1, tmp_fdna.dna2, tmp_fdna.dna3, this.mutation_rate_angle,
-                                            this.mutation_rate_speed, this.mutation_rate_w, this.mutation_rate_color);
+            FootDna f_dna = new FootDna(SC, tmp_fdna.dna1, tmp_fdna.dna2, tmp_fdna.dna3);
             f_dna.set_gene(true);
         }
     }

@@ -26,10 +26,18 @@ public struct Cal_Result_Data
 public struct DNA_set
 {
     public dna_a dna1, dna2, dna3;
+
+    public void mutate()
+    {
+        dna1.mutation_a();
+        dna2.mutation_a();
+        dna3.mutation_a();
+    } 
 }
 
 public class dna_a
 {
+    public float mutation_rate_angle, mutation_rate_speed, mutation_rate_w, mutation_rate_color;
     public int angle_max, angle_min, half_speed_max, half_speed_min;
     private List<int> W = new List<int> {-1, 1};
     //足のいろ
@@ -42,12 +50,18 @@ public class dna_a
     //第3関節 パラメータ
     public float f3_angle_x, f3_angle_z, f3_half_speed, w_x_3, w_z_3;
 
-    public dna_a(int angle_max, int angle_min, int half_speed_max, int half_speed_min)
+    public dna_a(int angle_max, int angle_min, int half_speed_max, int half_speed_min,
+            float mutation_rate_angle, float mutation_rate_speed, float mutation_rate_w, float mutation_rate_color)
     {
         this.angle_max = angle_max;
         this.angle_min = angle_min;
         this.half_speed_max = half_speed_max;
         this.half_speed_min = half_speed_min;
+
+        this.mutation_rate_angle = mutation_rate_angle;
+        this.mutation_rate_speed = mutation_rate_speed;
+        this.mutation_rate_color = mutation_rate_color;
+        this.mutation_rate_w = mutation_rate_w;
 
         f1_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);
         f2_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);
@@ -71,6 +85,55 @@ public class dna_a
         w_x_3 = W[(int)Random.Range(0,2)];
         w_z_3 = W[(int)Random.Range(0,2)];
     }
+
+    private float mutate(float value, int min, int max)
+    {
+        float new_value;
+        int a = (int)Mathf.Max(-10, min - (int)value);
+        int b = (int)Mathf.Min(10, max - (int)value);
+        new_value = value + (float)Random.Range(a,b);
+        return new_value;
+    }
+
+    public void mutation_a()
+    {
+        //angle_x
+        if(Random.value<this.mutation_rate_angle)
+        {this.f1_angle_x = mutate(this.f1_angle_x, this.angle_min, this.angle_max);}
+        if(Random.value<this.mutation_rate_angle)
+        {this.f2_angle_x = mutate(this.f2_angle_x, this.angle_min, this.angle_max);}
+        if(Random.value<this.mutation_rate_angle)
+        {this.f3_angle_x = mutate(this.f3_angle_x, this.angle_min, this.angle_max);}
+
+        //angle_z
+        if(Random.value<this.mutation_rate_angle)
+        {this.f1_angle_z = this.mutate(this.f1_angle_z, this.angle_min, this.angle_max);}
+        if(Random.value<this.mutation_rate_angle)
+        {this.f2_angle_z = this.mutate(this.f2_angle_z, this.angle_min, this.angle_max);}
+        if(Random.value<this.mutation_rate_angle)
+        {this.f3_angle_z = this.mutate(this.f3_angle_z, this.angle_min, this.angle_max);}
+        
+        //hald_speed
+        if(Random.value<this.mutation_rate_speed)
+        {this.f1_half_speed = this.mutate(this.f1_half_speed, this.half_speed_min, this.half_speed_max);}
+        if(Random.value<this.mutation_rate_speed)
+        {this.f2_half_speed = this.mutate(this.f2_half_speed, this.half_speed_min, this.half_speed_max);}
+        if(Random.value<this.mutation_rate_speed)
+        {this.f3_half_speed = this.mutate(this.f3_half_speed, this.half_speed_min, this.half_speed_max);}
+
+        // W
+        if(Random.value<this.mutation_rate_w) {this.w_x_1 = W[(int)Random.Range(0,2)];}
+        if(Random.value<this.mutation_rate_w) {this.w_z_1 = W[(int)Random.Range(0,2)];}
+        if(Random.value<this.mutation_rate_w) {this.w_x_2 = W[(int)Random.Range(0,2)];}
+        if(Random.value<this.mutation_rate_w) {this.w_z_2 = W[(int)Random.Range(0,2)];}
+        if(Random.value<this.mutation_rate_w) {this.w_x_3 = W[(int)Random.Range(0,2)];}
+        if(Random.value<this.mutation_rate_w) {this.w_z_3 = W[(int)Random.Range(0,2)];}
+
+        //color
+        if(Random.value<this.mutation_rate_color) {this.f1_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);}
+        if(Random.value<this.mutation_rate_color) {this.f2_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);}
+        if(Random.value<this.mutation_rate_color) {this.f3_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);}
+    }
     
 }
 
@@ -79,20 +142,13 @@ public class FootDna
     public Spider_Controller spider_c;
     private List<int> W = new List<int> {-1, 1};
     public dna_a dna1, dna2, dna3;
-    public float mutation_rate_angle, mutation_rate_speed, mutation_rate_w, mutation_rate_color;
 
-    public FootDna(Spider_Controller SC, dna_a dna1, dna_a dna2, dna_a dna3,
-                    float mutation_rate_angle, float mutation_rate_speed, float mutation_rate_w, float mutation_rate_color)
+    public FootDna(Spider_Controller SC, dna_a dna1, dna_a dna2, dna_a dna3)
     {
         this.spider_c = SC;
         this.dna1 = dna1;
         this.dna2 = dna2;
         this.dna3 = dna3;
-        
-        this.mutation_rate_angle = mutation_rate_angle;
-        this.mutation_rate_speed = mutation_rate_speed;
-        this.mutation_rate_w = mutation_rate_w;
-        this.mutation_rate_color = mutation_rate_color;
     }
 
     public void set_gene(bool is_Transform)
@@ -151,60 +207,11 @@ public class FootDna
         this.spider_c.Reset(is_Transform);
     }
 
-    private float mutate(float angle, int min, int max)
-    {
-        float new_angle;
-        int a = (int)Mathf.Max(-10, min - (int)angle);
-        int b = (int)Mathf.Min(10, max - (int)angle);
-        new_angle = angle + (float)Random.Range(a,b);
-        return new_angle;
-    }
-    public dna_a mutation_a(dna_a dna)
-    {
-        //angle_x
-        if(Random.value<this.mutation_rate_angle)
-        {dna.f1_angle_x = this.mutate(dna.f1_angle_x, dna.angle_min, dna.angle_max);}
-        if(Random.value<this.mutation_rate_angle)
-        {dna.f2_angle_x = this.mutate(dna.f2_angle_x, dna.angle_min, dna.angle_max);}
-        if(Random.value<this.mutation_rate_angle)
-        {dna.f3_angle_x = this.mutate(dna.f3_angle_x, dna.angle_min, dna.angle_max);}
-
-        //angle_z
-        if(Random.value<this.mutation_rate_angle)
-        {dna.f1_angle_z = this.mutate(dna.f1_angle_z, dna.angle_min, dna.angle_max);}
-        if(Random.value<this.mutation_rate_angle)
-        {dna.f2_angle_z = this.mutate(dna.f2_angle_z, dna.angle_min, dna.angle_max);}
-        if(Random.value<this.mutation_rate_angle)
-        {dna.f3_angle_z = this.mutate(dna.f3_angle_z, dna.angle_min, dna.angle_max);}
-        
-        //hald_speed
-        if(Random.value<this.mutation_rate_speed)
-        {dna.f1_half_speed = this.mutate(dna.f1_half_speed, dna.half_speed_min, dna.half_speed_max);}
-        if(Random.value<this.mutation_rate_speed)
-        {dna.f2_half_speed = this.mutate(dna.f2_half_speed, dna.half_speed_min, dna.half_speed_max);}
-        if(Random.value<this.mutation_rate_speed)
-        { dna.f3_half_speed = this.mutate(dna.f3_half_speed, dna.half_speed_min, dna.half_speed_max);}
-
-        // W
-        if(Random.value<this.mutation_rate_w) {dna.w_x_1 = W[(int)Random.Range(0,2)];}
-        if(Random.value<this.mutation_rate_w) {dna.w_z_1 = W[(int)Random.Range(0,2)];}
-        if(Random.value<this.mutation_rate_w) {dna.w_x_2 = W[(int)Random.Range(0,2)];}
-        if(Random.value<this.mutation_rate_w) {dna.w_z_2 = W[(int)Random.Range(0,2)];}
-        if(Random.value<this.mutation_rate_w) {dna.w_x_3 = W[(int)Random.Range(0,2)];}
-        if(Random.value<this.mutation_rate_w) {dna.w_z_3 = W[(int)Random.Range(0,2)];}
-
-        //color
-        if(Random.value<this.mutation_rate_color) {dna.f1_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);}
-        if(Random.value<this.mutation_rate_color) {dna.f2_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);}
-        if(Random.value<this.mutation_rate_color) {dna.f3_color = Random.ColorHSV(0f, 1f, 0f, 1f, 0f, 1f);}
-
-        return dna;
-    }
     public void mutation()
     {
-        this.dna1 = this.mutation_a(this.dna1);
-        this.dna2 = this.mutation_a(this.dna2);
-        this.dna3 = this.mutation_a(this.dna3);
+        this.dna1.mutation_a();
+        this.dna2.mutation_a();
+        this.dna3.mutation_a();
     }
 
     public DNA_set get_DNA_set()

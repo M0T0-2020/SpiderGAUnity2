@@ -13,6 +13,7 @@ public class test : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*
         GameObject _spider = Instantiate(spider) as GameObject;
         Spider_Controller SC = _spider.GetComponent<Spider_Controller>();
         _spider.name = "ndoifvnasdoivn";
@@ -30,7 +31,8 @@ public class test : MonoBehaviour
         f_dna.set_gene(false);
 
         Debug.Log(ga_name);        
-        //Debug.Log("1"+ga_name);        
+        //Debug.Log("1"+ga_name);   
+        */     
     }
 
     // Update is called once per frame
