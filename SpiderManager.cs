@@ -136,24 +136,45 @@ public class SpiderManager : MonoBehaviour
         }
     }
 
-    public Cal_Result_Data get_result()
+    public Cal_Result_Data get_result(bool sort)
     {
-        for (int i = 0; i < this.ScoreArray.Length; i++)
+        for (int i = 0; i < this.SpiderArray.Length; i++)
         {
-            for (int k = i; k > 0; k--)
-            {
-                float score_k_m1 = this.ScoreArray[k-1];
-                float score_k = this.ScoreArray[k];
-                if(score_k > score_k_m1)
-                {
-                        this.ScoreArray[k-1] = score_k;
-                        this.ScoreArray[k] = score_k_m1;
+            GameObject tmp_spider = this.SpiderArray[i];
+            FootDna tmp_fdna = this.FootDnaArray[i];
 
-                        FootDna footdna_k = this.FootDnaArray[k];
-                        this.FootDnaArray[k] = this.FootDnaArray[k-1];
-                        this.FootDnaArray[k-1] = footdna_k;
+            //ひっくり返ったらゼロ
+            if( tmp_fdna.spider_c.is_rotaion)
+            {
+                this.ScoreArray[i] += 0.0f;
+            }
+            else
+            {
+                float x_d = Mathf.Pow(tmp_spider.transform.position.x - tmp_fdna.spider_c.start_pos.x, 2);
+                float z_d = Mathf.Pow(tmp_spider.transform.position.z - tmp_fdna.spider_c.start_pos.z, 2);
+                float score = x_d + z_d;
+                this.ScoreArray[i] += score;
+            }
+        }
+        if(sort)
+        {
+            for (int i = 0; i < this.ScoreArray.Length; i++)
+            {
+                for (int k = i; k > 0; k--)
+                {
+                    float score_k_m1 = this.ScoreArray[k-1];
+                    float score_k = this.ScoreArray[k];
+                    if(score_k > score_k_m1)
+                    {
+                            this.ScoreArray[k-1] = score_k;
+                            this.ScoreArray[k] = score_k_m1;
+
+                            FootDna footdna_k = this.FootDnaArray[k];
+                            this.FootDnaArray[k] = this.FootDnaArray[k-1];
+                            this.FootDnaArray[k-1] = footdna_k;
+                    }
+                    else{break;}
                 }
-                else{break;}
             }
         }
         Cal_Result_Data Data = new Cal_Result_Data();

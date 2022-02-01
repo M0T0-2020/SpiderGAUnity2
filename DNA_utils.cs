@@ -206,4 +206,13 @@ public class FootDna
         this.dna2 = this.mutation_a(this.dna2);
         this.dna3 = this.mutation_a(this.dna3);
     }
+
+    public DNA_set get_DNA_set()
+    {
+        DNA_set dna_set;
+        dna_set.dna1 = this.dna1;
+        dna_set.dna2 = this.dna2;
+        dna_set.dna3 = this.dna3;
+        return dna_set;
+    }
 }

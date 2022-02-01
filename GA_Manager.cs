@@ -5,6 +5,26 @@ using UnityEngine;
 
 static class RandomUtils
 {
+    public static int[] get_disjoint_int(this cs_system.Random rnd,
+                                            int num, int minInclusive, int maxInclusive)
+    {
+        List<int> list = new List<int>(num);
+        bool flag = true;
+        while(flag)
+        {
+            int idx = rnd.Next(minInclusive, maxInclusive+1);
+            if(!list.Contains(idx))
+            {
+                list.Add(idx);
+                if(list.Count==num)
+                {
+                    flag = false;
+                }
+            }
+        }
+        return list.ToArray();
+    }
+
     public static FootDna[] Choice(this cs_system.Random rnd,
                     IEnumerable<FootDna> choices, IEnumerable<float> weights,
                     int k = 1, bool is_replacement = true)
@@ -70,6 +90,11 @@ public class ExpCalulator
         this.t = t;    
     }
 
+    public void set_t_value(float t)
+    {
+        this.t = t;
+    }
+
     public float Exp(float x)
     {
         float value = Mathf.Exp(x/this.t);
@@ -117,8 +142,8 @@ public class GA_Manager : MonoBehaviour
     GAName GA_Name = GAName.SGA;
 
     private SpiderManager spider_m_sc;
-
-    public float exp_t = 5;
+    [SerializeField]
+    float exp_t = -1;
     ExpCalulator exp_with_t;
 
     // Start is called before the first frame update
@@ -148,8 +173,7 @@ public class GA_Manager : MonoBehaviour
         spider_m_sc.is_Debug = this.is_Debug;
 
         spider_m_sc.CreateManager();
-
-        exp_with_t = new ExpCalulator(exp_t);
+        exp_with_t = new ExpCalulator(this.exp_t);
     }
 
     // Update is called once per frame
@@ -165,11 +189,20 @@ public class GA_Manager : MonoBehaviour
             }
             else
             {
-                Cal_Result_Data data = this.spider_m_sc.get_result();
-                
                 if(GA_Name.ToString()=="SGA")
                 {
+                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
                     SGA(data);
+                }
+                if(GA_Name.ToString()=="IGS")
+                {
+                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:false);
+                    IGS(data);
+                }
+                if(GA_Name.ToString()=="SS")
+                {
+                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
+                    SS(data);
                 }
                 
                 this.mean_cnt = 0;
@@ -199,14 +232,23 @@ public class GA_Manager : MonoBehaviour
         float[] SelectionWeightArray = new float[SortedScoreArray.Length];
         float ScoreSum = 0;
         float MaxScore = (float)-1e10;
+        float ScoreMean = 0;
 
         for(int i=0; i<SortedScoreArray.Length; i++)
         {
-            if(MaxScore < SortedScoreArray[i])
+            float score = SortedScoreArray[i];
+            ScoreMean += score/SortedFootDnaArray.Length;
+            if(MaxScore < score)
             {
-                MaxScore = SortedScoreArray[i];
+                MaxScore = score;
             }
             
+        }
+        
+        this.exp_with_t.set_t_value(0.5f*MaxScore);
+        
+        for(int i=0; i<SortedScoreArray.Length; i++)
+        {
             SelectionWeightArray[i] = exp_with_t.Exp(SortedScoreArray[i]);
             ScoreSum += SelectionWeightArray[i];
         }
@@ -214,11 +256,11 @@ public class GA_Manager : MonoBehaviour
         {
             SelectionWeightArray[i] /= ScoreSum;
         }
-
-        Debug.Log(MaxScore);
+        
+        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" + ScoreMean);
 
         DNA_set[] ChildrenArray = new DNA_set[SortedFootDnaArray.Length];
-        cs_system.Random rnd= new cs_system.Random();
+        cs_system.Random rnd = new cs_system.Random();
         for (int i = 0; i < SortedFootDnaArray.Length; i++)
         {
             FootDna[] SelectDnaArray = rnd.Choice(SortedFootDnaArray, SelectionWeightArray, 2, false);
@@ -227,6 +269,82 @@ public class GA_Manager : MonoBehaviour
         }
         int seed = Random.Range(0,10000);
         this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
+    }
+
+    void IGS(Cal_Result_Data data)
+    {
+        FootDna[] FootDnaArray  = data.footdnaArray;
+        float[] ScoreArray = data.ScoreArray;
+        int length = FootDnaArray.Length; 
+        float ScoreSum = 0;
+        float ScoreMean = 0;
+        float MaxScore = (float)-1e10;
+
+        for (int i = 0; i < length; i++)
+        {
+            float score = ScoreArray[i];
+            ScoreSum += score;
+            ScoreMean += score/length;
+            if(MaxScore < score)
+            {
+                MaxScore = score;
+            }
+        }
+
+        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
+
+        
+        DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
+
+        cs_system.Random rnd = new cs_system.Random();
+        for (int i = 0; i < length; i++)
+        {
+            if(ScoreArray[i]<ScoreMean)
+            {
+                int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
+                int idx1 = idx_arry[0];
+                int idx2 = idx_arry[1];
+
+                DNA_set dna_set = CrossOver(FootDnaArray[idx1], FootDnaArray[idx2]);
+                ChildrenArray[i] = dna_set;
+            }
+            else
+            {
+                DNA_set dna_set = FootDnaArray[i].get_DNA_set();
+                ChildrenArray[i] = dna_set;
+            }
+        }
+
+        int seed = Random.Range(0,10000);
+        this.spider_m_sc.ResetDnaArray(ChildrenArray, seed);
+    }
+
+    void SS(Cal_Result_Data data)
+    {
+        FootDna[] SortedFootDnaArray  = data.footdnaArray;
+        float[] SortedScoreArray = data.ScoreArray;
+        float[] SelectionWeightArray = new float[SortedScoreArray.Length];
+        int length = SortedFootDnaArray.Length; 
+        float ScoreSum = 0;
+        float ScoreMean = 0;
+        float MaxScore = (float)-1e10;
+        float MinScore = (float)1e10;
+
+        for (int i = 0; i < length; i++)
+        {
+            float score = SortedScoreArray[i];
+            ScoreSum += score;
+            ScoreMean += score/length;
+            if(MaxScore < score)
+            {
+                MaxScore = score;
+            }
+            if(MinScore>score)
+            {
+                MinScore = score;
+            }
+        }
+
     }
 
     public float get_acc_time()
