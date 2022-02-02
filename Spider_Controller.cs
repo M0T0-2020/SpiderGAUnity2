@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System_SC = System;
+using System_CS = System;
 
 public class Spider_Controller : MonoBehaviour
 {
@@ -367,12 +367,5 @@ public class Gene_mini
         g3_2.renderer1.material.color = f3_color;
 
     }
-
-}
-
-[System_SC.SerializableAttribute]
-public class DnaDataForSave {
-    public Dictionary<string, float> data1_1, data1_2, data2_1, data2_2, data3_1, data3_2;
-    //public 
 
 }
