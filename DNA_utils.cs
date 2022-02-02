@@ -21,6 +21,7 @@ public struct Cal_Result_Data
 {
     public float[] ScoreArray;
     public FootDna[] footdnaArray;
+    public ScoreData scoredata;
 }
 
 public struct DNA_set

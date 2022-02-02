@@ -116,6 +116,8 @@ public class GA_Manager : MonoBehaviour
     float[] StoreScoreArray;
     Dictionary<int, List<int>> FamilyGroupIndexDic;
     public GameObject spider_manager;
+    public GameObject Data_manager_obj;
+    private DataManager DataManager_sc;
     public float mutation_rate_angle;
     public float mutation_rate_speed;
     public float mutation_rate_w;
@@ -162,6 +164,9 @@ public class GA_Manager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        this.DataManager_sc = Data_manager_obj.GetComponent<DataManager>();
+        this.DataManager_sc.check_make_dir();
+
         //set num_spider to even value
         num_spider = 2*(int)(num_spider/2);
         
@@ -209,38 +214,44 @@ public class GA_Manager : MonoBehaviour
             }
             else
             {
+                Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
+                ScoreData scoredata = this.DataManager_sc.UpdateScore(data.ScoreArray);
+
+                this.DataManager_sc.SaveDNAData(data.footdnaArray[0],
+                                    this.trail_cnt.ToString()+"_"+this.GA_Name.ToString()+"_1.xml");
+                this.DataManager_sc.SaveDNAData(data.footdnaArray[1],
+                                    this.trail_cnt.ToString()+"_"+this.GA_Name.ToString()+"_2.xml");
+                this.DataManager_sc.SaveDNAData(data.footdnaArray[2],
+                                    this.trail_cnt.ToString()+"_"+this.GA_Name.ToString()+"_3.xml");
+                this.DataManager_sc.SaveDNAData(data.footdnaArray[3],
+                                    this.trail_cnt.ToString()+"_"+this.GA_Name.ToString()+"_4.xml");
+
+                data.scoredata = scoredata;
+                Debug.Log("MaxScore: " + scoredata.max + "  MeanScore:" + scoredata.mean);
                 if(GA_Name.ToString()=="SGA")
-                {
-                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
+                {    
                     SGA(data);
                 }
                 if(GA_Name.ToString()=="IGS")
                 {
-                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:false);
                     IGS(data);
                 }
                 if(GA_Name.ToString()=="SS")
                 {
-                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
                     SS(data);
                 }
                 if(GA_Name.ToString()=="CHC")
                 {
-                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
                     CHC(data);
                 }
                 if(GA_Name.ToString()=="ER")
                 {
-                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:false);
                     ER(data);
                 }
                 if(GA_Name.ToString()=="MGG")
                 {
-                    Cal_Result_Data data = this.spider_m_sc.get_result(sort:false);
                     MGG(data);
                 }
-                
-                
                 this.mean_cnt = 0;
             }
             this.acc_time = 0;
@@ -269,22 +280,9 @@ public class GA_Manager : MonoBehaviour
         float[] SelectionWeightArray = new float[SortedScoreArray.Length];
         int length = SortedFootDnaArray.Length;
         float ScoreSum = 0;
-        float MaxScore = (float)-1e10;
-        float ScoreMean = 0;
 
-        for(int i=0; i<length; i++)
-        {
-            float score = SortedScoreArray[i];
-            ScoreMean += score/SortedFootDnaArray.Length;
-            if(MaxScore < score)
-            {
-                MaxScore = score;
-            }
-            
-        }
-        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" + ScoreMean);
-        
-        this.exp_with_t.set_t_value(0.5f*MaxScore);
+        // first index value is max        
+        this.exp_with_t.set_t_value(0.5f*data.scoredata.max);
         
         for(int i=0; i<length; i++)
         {
@@ -316,30 +314,13 @@ public class GA_Manager : MonoBehaviour
         FootDna[] FootDnaArray  = data.footdnaArray;
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length; 
-        float ScoreSum = 0;
-        float ScoreMean = 0;
-        float MaxScore = (float)-1e10;
 
-        for (int i = 0; i < length; i++)
-        {
-            float score = ScoreArray[i];
-            ScoreSum += score;
-            ScoreMean += score/length;
-            if(MaxScore < score)
-            {
-                MaxScore = score;
-            }
-        }
-
-        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
-
-        
         DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
 
         cs_system.Random rnd = new cs_system.Random();
         for (int i = 0; i < length; i++)
         {
-            if(ScoreArray[i]<ScoreMean)
+            if(ScoreArray[i]<data.scoredata.mean)
             {
                 int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
                 int idx1 = idx_arry[0];
@@ -365,30 +346,10 @@ public class GA_Manager : MonoBehaviour
         float[] SortedScoreArray = data.ScoreArray;
         float[] SelectionWeightArray = new float[SortedScoreArray.Length];
         int length = SortedFootDnaArray.Length; 
-        float ScoreSum = 0;
-        float ScoreMean = 0;
-        float MaxScore = (float)-1e10;
-        float MinScore = (float)1e10;
+        float MinScore = data.scoredata.min;
 
         this.exp_with_t.set_t_value(0.05f*num_spider);
-
-        for (int i = 0; i < length; i++)
-        {
-            float score = SortedScoreArray[i];
-            ScoreSum += score;
-            ScoreMean += score/length;
-            if(MaxScore < score)
-            {
-                MaxScore = score;
-            }
-            if(MinScore>score)
-            {
-                MinScore = score;
-            }
-        }
         
-        Debug.Log("MaxScore: " + MaxScore + "  MeanScore:" + ScoreMean);
-
         float s = 0;
         for (int i = 1; i < length+1; i++)
         {
@@ -426,23 +387,7 @@ public class GA_Manager : MonoBehaviour
     {
         FootDna[] FootDnaArray  = data.footdnaArray;
         float[] ScoreArray = data.ScoreArray;
-        int length = FootDnaArray.Length; 
-        float ScoreSum = 0;
-        float ScoreMean = 0;
-        float MaxScore = (float)-1e10;
-
-        for (int i = 0; i < length; i++)
-        {
-            float score = ScoreArray[i];
-            ScoreSum += score;
-            ScoreMean += score/length;
-            if(MaxScore < score)
-            {
-                MaxScore = score;
-            }
-        }
-
-        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
+        int length = FootDnaArray.Length;
 
         if(this.trail_cnt==1)
         {
@@ -520,22 +465,7 @@ public class GA_Manager : MonoBehaviour
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length; 
         cs_system.Random rnd = new cs_system.Random();
-        float ScoreSum = 0;
-        float ScoreMean = 0;
-        float MaxScore = (float)-1e10;
 
-        for (int i = 0; i < length; i++)
-        {
-            float score = ScoreArray[i];
-            ScoreSum += score;
-            ScoreMean += score/length;
-            if(MaxScore < score)
-            {
-                MaxScore = score;
-            }
-        }
-
-        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
         if(this.trail_cnt==1)
         {
             if(is_Debug)
@@ -621,22 +551,7 @@ public class GA_Manager : MonoBehaviour
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length; 
         cs_system.Random rnd = new cs_system.Random();
-        float ScoreSum = 0;
-        float ScoreMean = 0;
-        float MaxScore = (float)-1e10;
-
-        for (int i = 0; i < length; i++)
-        {
-            float score = ScoreArray[i];
-            ScoreSum += score;
-            ScoreMean += score/length;
-            if(MaxScore < score)
-            {
-                MaxScore = score;
-            }
-        }
         
-        Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
         if(this.trail_cnt==1)
         {
             if(is_Debug)
