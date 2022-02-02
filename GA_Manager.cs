@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+struct FootDna_Index
+{
+    public FootDna[] dna;
+    public int[] index;
+}
 static class RandomUtils
 {
     public static int[] get_disjoint_int(this cs_system.Random rnd,
@@ -25,7 +30,7 @@ static class RandomUtils
         return list.ToArray();
     }
 
-    public static FootDna[] Choice(this cs_system.Random rnd,
+    public static FootDna_Index Choice(this cs_system.Random rnd,
                     IEnumerable<FootDna> choices, IEnumerable<float> weights,
                     int k = 1, bool is_replacement = true)
     {
@@ -78,7 +83,10 @@ static class RandomUtils
                 i++;
             }
         }
-        return SelectDnaArray;
+        FootDna_Index data;
+        data.dna = SelectDnaArray;
+        data.index = SelectedIndexArray.ToArray();
+        return data;
     }
 }
 
@@ -148,6 +156,8 @@ public class GA_Manager : MonoBehaviour
     [SerializeField]
     float exp_t = -1;
     ExpCalulator exp_with_t;
+    float[] RankingWeight = new float[4] {0.35f, 0.3f, 0.2f, 0.15f};
+
 
     // Start is called before the first frame update
     void Start()
@@ -291,7 +301,7 @@ public class GA_Manager : MonoBehaviour
         for (int i = 0; i < (int)(length/2); i++)
         {
             FootDna[] SelectDnaArray = rnd.Choice(choices:SortedFootDnaArray, weights:SelectionWeightArray,
-                                                                        k:2, is_replacement:false);
+                                                                        k:2, is_replacement:false).dna;
             DNA_set dna_set1 = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
             DNA_set dna_set2 = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
             ChildrenArray[2*i] = dna_set1;
@@ -399,7 +409,7 @@ public class GA_Manager : MonoBehaviour
             if(score>MinScore)
             {
                 FootDna[] SelectDnaArray = rnd.Choice(choices:SortedFootDnaArray, weights:SelectionWeightArray,
-                                                            k:2, is_replacement:true);
+                                                            k:2, is_replacement:true).dna;
                 DNA_set dna_set = CrossOver(SelectDnaArray[0], SelectDnaArray[1]);
                 ChildrenArray[i] = dna_set;
             }
@@ -509,6 +519,7 @@ public class GA_Manager : MonoBehaviour
         FootDna[] FootDnaArray  = data.footdnaArray;
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length; 
+        cs_system.Random rnd = new cs_system.Random();
         float ScoreSum = 0;
         float ScoreMean = 0;
         float MaxScore = (float)-1e10;
@@ -590,7 +601,6 @@ public class GA_Manager : MonoBehaviour
         }
 
         DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
-        cs_system.Random rnd = new cs_system.Random();
         for (int i = 0; i < (int)(length/2); i++)
         {
             int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
@@ -610,6 +620,7 @@ public class GA_Manager : MonoBehaviour
         FootDna[] FootDnaArray  = data.footdnaArray;
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length; 
+        cs_system.Random rnd = new cs_system.Random();
         float ScoreSum = 0;
         float ScoreMean = 0;
         float MaxScore = (float)-1e10;
@@ -624,7 +635,7 @@ public class GA_Manager : MonoBehaviour
                 MaxScore = score;
             }
         }
-
+        
         Debug.Log("MaxScore: " + MaxScore+ "  MeanScore:" +ScoreMean);
         if(this.trail_cnt==1)
         {
@@ -680,10 +691,15 @@ public class GA_Manager : MonoBehaviour
                 }
 
                 //take
+                //best individual
                 newStoreFootDnaArray[idx1] = familyFootDnaArry[0];
-                newStoreFootDnaArray[idx2] = familyFootDnaArry[1];
                 newStoreScoreArray[idx1] = scorearry[0];
-                newStoreScoreArray[idx2] = scorearry[1];
+
+                //ranking select
+                FootDna_Index dna_idx = rnd.Choice(choices:familyFootDnaArry, 
+                                            weights:this.RankingWeight,k:1,is_replacement:true);
+                newStoreFootDnaArray[idx2] = dna_idx.dna[0];
+                newStoreScoreArray[idx2] = dna_idx.index[0];
             }
 
             StoreFootDnaArray = newStoreFootDnaArray;
@@ -691,7 +707,6 @@ public class GA_Manager : MonoBehaviour
         }
 
         DNA_set[] ChildrenArray = new DNA_set[FootDnaArray.Length];
-        cs_system.Random rnd = new cs_system.Random();
         for (int i = 0; i < (int)(length/2); i++)
         {
             int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
