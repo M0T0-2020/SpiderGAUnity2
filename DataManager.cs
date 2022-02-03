@@ -180,10 +180,15 @@ public class DataManager : MonoBehaviour
     [SerializeField]
     List<DnaDataForSave> DNA_Lsit;
 
-    public string Basepath;
+    private string Basepath;
     // Start is called before the first frame update
     void Start()
     {        
+    }
+
+    public void setBasePath(string BasePath)
+    {
+        this.Basepath = BasePath;
     }
     public void check_make_dir()
     {
@@ -206,11 +211,18 @@ public class DataManager : MonoBehaviour
         dna_data.set_dna2(footdna.dna2);
         dna_data.set_dna3(footdna.dna3);
         // example "." + "/" + "SGA" + "/" + "data1"
-        string path = Basepath  + "/" + file_name;
+        string path = Basepath  + "/DNA_" + file_name;
 
         XmlUtil.Seialize<DnaDataForSave>(path, dna_data);
     }
 
+    public void SaveScoreList()
+    {
+        XmlUtil.Seialize<List<float>>(Basepath+"/ScoreMax.xml", ScoreMax);
+        XmlUtil.Seialize<List<float>>(Basepath+"/ScoreMin.xml", ScoreMin);
+        XmlUtil.Seialize<List<float>>(Basepath+"/ScoreMean.xml", ScoreMean);
+        XmlUtil.Seialize<List<float>>(Basepath+"/ScoreStd.xml", ScoreStd);
+    }
 
     public ScoreData UpdateScore(float[] ScoreArray)
     {

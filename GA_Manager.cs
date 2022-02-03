@@ -142,12 +142,14 @@ public class GA_Manager : MonoBehaviour
     public int angle_min = 10;
     public int half_speed_max = 50;
     public int half_speed_min = 15;
-    private int trail_cnt = 1;
+    private int trail_cnt = 0;
     
     private int mean_cnt = 0;
     public int mean_num = 1;
 
     public float prevMaxScore = (float)-1e10;
+    public string Basepath;
+
     
     //float MaxScore = (float)-1e10;
     public enum GAName {SGA, IGS, SS, CHC, ER, MGG}
@@ -164,9 +166,6 @@ public class GA_Manager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        this.DataManager_sc = Data_manager_obj.GetComponent<DataManager>();
-        this.DataManager_sc.check_make_dir();
-
         //set num_spider to even value
         num_spider = 2*(int)(num_spider/2);
         
@@ -214,6 +213,12 @@ public class GA_Manager : MonoBehaviour
             }
             else
             {
+                if(this.trail_cnt==0)
+                {
+                    this.DataManager_sc = Data_manager_obj.GetComponent<DataManager>();
+                    this.DataManager_sc.setBasePath(this.Basepath);
+                    this.DataManager_sc.check_make_dir();
+                }
                 Cal_Result_Data data = this.spider_m_sc.get_result(sort:true);
                 ScoreData scoredata = this.DataManager_sc.UpdateScore(data.ScoreArray);
 
@@ -227,7 +232,7 @@ public class GA_Manager : MonoBehaviour
                                     this.trail_cnt.ToString()+"_"+this.GA_Name.ToString()+"_4.xml");
 
                 data.scoredata = scoredata;
-                Debug.Log("MaxScore: " + scoredata.max + "  MeanScore:" + scoredata.mean);
+                Debug.Log("trail_cnt: " + this.trail_cnt + "  MaxScore: " + scoredata.max + "  MeanScore:" + scoredata.mean);
                 if(GA_Name.ToString()=="SGA")
                 {    
                     SGA(data);
@@ -253,10 +258,23 @@ public class GA_Manager : MonoBehaviour
                     MGG(data);
                 }
                 this.mean_cnt = 0;
+                this.trail_cnt += 1;
+                if(this.trail_cnt>=this.trail_num){Quit();}
             }
             this.acc_time = 0;
-            this.trail_cnt += 1;
         }
+    }
+
+    void Quit()
+    {
+        //save data
+        this.DataManager_sc.SaveScoreList();
+
+        //if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        //elif UNITY_STANDALONE
+        UnityEngine.Application.Quit();
+        //endif
     }
 
     public DNA_set CrossOver(FootDna FootDna1, FootDna FootDna2)
@@ -320,6 +338,7 @@ public class GA_Manager : MonoBehaviour
         cs_system.Random rnd = new cs_system.Random();
         for (int i = 0; i < length; i++)
         {
+            //平均以下のものは子世代といれかえ、ほかはそのまま保存
             if(ScoreArray[i]<data.scoredata.mean)
             {
                 int[] idx_arry = rnd.get_disjoint_int(2, 0, this.num_spider-1);
@@ -367,6 +386,7 @@ public class GA_Manager : MonoBehaviour
         for (int i = 0; i < SortedFootDnaArray.Length; i++)
         {
             float score = SortedScoreArray[i];
+            //最悪な個体は残して、ほかは子世代といれかえ
             if(score>MinScore)
             {
                 FootDna[] SelectDnaArray = rnd.Choice(choices:SortedFootDnaArray, weights:SelectionWeightArray,
@@ -389,7 +409,7 @@ public class GA_Manager : MonoBehaviour
         float[] ScoreArray = data.ScoreArray;
         int length = FootDnaArray.Length;
 
-        if(this.trail_cnt==1)
+        if(this.trail_cnt==0)
         {
             if(is_Debug)
             {
@@ -466,7 +486,7 @@ public class GA_Manager : MonoBehaviour
         int length = FootDnaArray.Length; 
         cs_system.Random rnd = new cs_system.Random();
 
-        if(this.trail_cnt==1)
+        if(this.trail_cnt==0)
         {
             if(is_Debug)
             {
@@ -552,7 +572,7 @@ public class GA_Manager : MonoBehaviour
         int length = FootDnaArray.Length; 
         cs_system.Random rnd = new cs_system.Random();
         
-        if(this.trail_cnt==1)
+        if(this.trail_cnt==0)
         {
             if(is_Debug)
             {

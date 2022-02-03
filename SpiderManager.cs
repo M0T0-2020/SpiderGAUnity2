@@ -12,10 +12,8 @@ public class SpiderManager : MonoBehaviour
     public float Range_x = 20;
     public GameObject Spider;
     public int num_spider = 50;
-    public float mutation_rate_angle = 0.5f;
-    public float mutation_rate_speed = 0.5f;
-    public float mutation_rate_w = 0.5f;
-    public float mutation_rate_color = 0.01f;
+
+    public float mutation_rate_angle, mutation_rate_speed, mutation_rate_w, mutation_rate_color;
 
     public int angle_max = 180;
     public int angle_min = 10;
@@ -89,7 +87,6 @@ public class SpiderManager : MonoBehaviour
 
     public void ResetDnaArray(DNA_set[] NewFootDnaSetArray, int seed)
     {
-        Random.InitState(seed);
         //this.SpiderArray = new GameObject[num_spider];
         //this.FootDnaArray = new FootDna[num_spider];
         //this.ScoreArray = new float[num_spider];
