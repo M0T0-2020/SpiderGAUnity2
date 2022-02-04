@@ -9,9 +9,9 @@ public struct DnaDataForSave {
     public int angle_max_1, angle_min_1, half_speed_max_1, half_speed_min_1;
     //足のいろ
     //コンストラクタ Color32(byte r, byte g, byte b, byte a)
-    byte f1_color_1_r, f1_color_1_g, f1_color_1_b, f1_color_1_a;
-    byte f2_color_1_r, f2_color_1_g, f2_color_1_b, f2_color_1_a;
-    byte f3_color_1_r, f3_color_1_g, f3_color_1_b, f3_color_1_a;
+    public byte f1_color_1_r, f1_color_1_g, f1_color_1_b, f1_color_1_a;
+    public byte f2_color_1_r, f2_color_1_g, f2_color_1_b, f2_color_1_a;
+    public byte f3_color_1_r, f3_color_1_g, f3_color_1_b, f3_color_1_a;
     //第1関節 パラメータ
     public float f1_angle_x_1, f1_angle_z_1, f1_half_speed_1, w_x_1_1, w_z_1_1;
     
@@ -23,9 +23,9 @@ public struct DnaDataForSave {
     //2
     public int angle_max_2, angle_min_2, half_speed_max_2, half_speed_min_2;
     //足のいろ
-    byte f1_color_2_r, f1_color_2_g, f1_color_2_b, f1_color_2_a;
-    byte f2_color_2_r, f2_color_2_g, f2_color_2_b, f2_color_2_a;
-    byte f3_color_2_r, f3_color_2_g, f3_color_2_b, f3_color_2_a;
+    public byte f1_color_2_r, f1_color_2_g, f1_color_2_b, f1_color_2_a;
+    public byte f2_color_2_r, f2_color_2_g, f2_color_2_b, f2_color_2_a;
+    public byte f3_color_2_r, f3_color_2_g, f3_color_2_b, f3_color_2_a;
     //第1関節 パラメータ
     public float f1_angle_x_2, f1_angle_z_2, f1_half_speed_2, w_x_1_2, w_z_1_2;   
     //第2関節 パラメータ
@@ -36,9 +36,9 @@ public struct DnaDataForSave {
     //3
     public int angle_max_3, angle_min_3, half_speed_max_3, half_speed_min_3;
     //足のいろ
-    byte f1_color_3_r, f1_color_3_g, f1_color_3_b, f1_color_3_a;
-    byte f2_color_3_r, f2_color_3_g, f2_color_3_b, f2_color_3_a;
-    byte f3_color_3_r, f3_color_3_g, f3_color_3_b, f3_color_3_a;
+    public byte f1_color_3_r, f1_color_3_g, f1_color_3_b, f1_color_3_a;
+    public byte f2_color_3_r, f2_color_3_g, f2_color_3_b, f2_color_3_a;
+    public byte f3_color_3_r, f3_color_3_g, f3_color_3_b, f3_color_3_a;
     //第1関節 パラメータ
     public float f1_angle_x_3, f1_angle_z_3, f1_half_speed_3, w_x_1_3, w_z_1_3;    
     //第2関節 パラメータ
